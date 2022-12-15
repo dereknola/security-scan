@@ -11,26 +11,26 @@ handle_error() {
 trap 'handle_error' ERR
 
 
-if [[ "$(journalctl -D /var/log/journal -u k3s | grep 'Managed etcd cluster initializing' | grep -v grep | wc -l)" -gt 0 ]]; then
+if journalctl -D /var/log/journal -u k3s | grep -q 'Managed etcd cluster initializing'; then
     case $1 in 
         "1.1.11")
-            echo $(stat -c %a /var/lib/rancher/k3s/server/db/etcd);;
+            stat -c %a /var/lib/rancher/k3s/server/db/etcd;;
         "1.2.29")
-            echo $(journalctl -D /var/log/journal -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'etcd-');;
+            journalctl -D /var/log/journal -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'etcd-';;
         "2.1")
-            echo $(grep -A 5 'client-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep -E 'cert-file|key-file');;
+            grep -A 5 'client-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep -E 'cert-file|key-file';;
         "2.2")
-            echo $(grep -A 5 'client-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep 'client-cert-auth');;
+            grep -A 5 'client-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep 'client-cert-auth';;
         "2.3")
-            echo $(grep 'auto-tls' /var/lib/rancher/k3s/server/db/etcd/config);;
+            grep 'auto-tls' /var/lib/rancher/k3s/server/db/etcd/config;;
         "2.4")
-            echo $(grep -A 5 'peer-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep -E 'cert-file|key-file');;
+            grep -A 5 'peer-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep -E 'cert-file|key-file';;
         "2.5")
-            echo $(grep -A 5 'peer-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep 'client-cert-auth');;
+            grep -A 5 'peer-transport-security' /var/lib/rancher/k3s/server/db/etcd/config | grep 'client-cert-auth';;
         "2.6")
-            echo $(grep 'peer-auto-tls' /var/lib/rancher/k3s/server/db/etcd/config);;
+            grep 'peer-auto-tls' /var/lib/rancher/k3s/server/db/etcd/config;;
         "2.7")
-            echo $(grep 'trusted-ca-file' /var/lib/rancher/k3s/server/db/etcd/config);;
+            grep 'trusted-ca-file' /var/lib/rancher/k3s/server/db/etcd/config;;
     esac
 else
 # If another database is running, return whatever is required to pass the scan
