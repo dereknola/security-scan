@@ -11,19 +11,19 @@ master:
 
   apiserver:
     bins:
-      - k3s
+      - k3s-server
 
   scheduler:
     bins:
-      - k3s
+      - k3s-server
 
   controllermanager:
     bins:
-      - k3s
+      - k3s-server
 
   etcd:
     bins:
-      - k3s
+      - k3s-server
 
   node:
     components:
@@ -32,13 +32,13 @@ master:
 
     kubelet:
       bins:
-        - k3s
+        - k3s-server
       defaultkubeconfig: /var/lib/rancher/k3s/agent/kubelet.kubeconfig
       defaultcafile: /var/lib/rancher/k3s/agent/client-ca.crt
 
     proxy:
       bins:
-        - k3s
+        - k3s-server
       defaultkubeconfig: /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig
 
   policies:
