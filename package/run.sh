@@ -18,9 +18,8 @@ USER_SKIP_LOCATION="/etc/kbs/userskip/config.json"
 NA_SKIP_LOCATION="/etc/kbs/notapplicable/config.json"
 DS_SKIP_LOCATION="/etc/kbs/defaultskip/config.json"
 
-SONOBUOY_OUTPUT_DIR=${SONOBUOY_OUTPUT_DIR:-/tmp/sonobuoy}
+KUBEBENCH_RESULTS_DIR=${KUBEBENCH_RESULTS_DIR:-/tmp/results}
 
-KB_SUMMARIZER_ROOT=${KB_SUMMARIZER_ROOT:-/tmp/kb-summarizer}
 CONFIG_DIR="${CONFIG_DIR:-/etc/kube-bench/cfg}"
 
 handle_error() {
@@ -50,31 +49,18 @@ trap 'handle_error' ERR
 
 echo "Rancher: Running CIS Benchmarks"
 
-# Clean up the output directory, just in case
-rm -rf "${SONOBUOY_OUTPUT_DIR}"/*.tar.gz
+# Clean up the results directory, just in case
+rm -rf "${KUBEBENCH_RESULTS_DIR}"/*.json
 
-# Run sonobuoy first
-if ! sonobuoy aggregator -v 3
-then
-  echo "error running sonobuoy" | tee -a ${ERROR_LOG_FILE}
-  exit 1
-fi
+# Run kube-bench first
+run_kubebench.sh
 
-SONOBUOY_OUTPUT_FILE=$(ls -1t "${SONOBUOY_OUTPUT_DIR}"/*.tar.gz | head -1)
-# Extract the results
-mkdir -p "${KB_SUMMARIZER_ROOT}"/{input,output}
-if ! tar -C "${KB_SUMMARIZER_ROOT}"/input \
-         -xvf "${SONOBUOY_OUTPUT_FILE}" \
-         --warning=no-timestamp 2> ${ERROR_LOG_FILE}
-then
-  echo "error extracting output file: \"${SONOBUOY_OUTPUT_FILE}\"" | tee -a ${ERROR_LOG_FILE}
-  exit 1
-fi
+KBS_OUTPUT_DIR=${KBS_OUTPUT_DIR:-/tmp/kb-summarizer/output}
+KBS_OUTPUT_FILENAME=output.json
+mkdir -p "${KBS_OUTPUT_DIR}"
 
 PLUGIN_NAME=${PLUGIN_NAME:-rancher-kube-bench}
-KBS_INPUT_DIR=${KB_SUMMARIZER_ROOT}/input/plugins/${PLUGIN_NAME}/results
-KBS_OUTPUT_DIR=${KB_SUMMARIZER_ROOT}/output
-KBS_OUTPUT_FILENAME=output.json
+
 
 get_k8s_api_version() {
   set +x # don't print the token
@@ -132,7 +118,7 @@ if [[ "${OVERRIDE_BENCHMARK_VERSION}" != "" ]]; then
   if ! kb-summarizer \
         --benchmark-version "${OVERRIDE_BENCHMARK_VERSION}" \
         --controls-dir "${CONFIG_DIR}" \
-        --input-dir "${KBS_INPUT_DIR}" \
+        --input-dir "${KUBEBENCH_RESULTS_DIR}" \
         --output-dir "${KBS_OUTPUT_DIR}" \
         --output-filename "${KBS_OUTPUT_FILENAME}" 2> "${ERROR_LOG_FILE}"
   then
@@ -142,7 +128,7 @@ if [[ "${OVERRIDE_BENCHMARK_VERSION}" != "" ]]; then
 else
   if ! kb-summarizer \
         --k8s-version "${RANCHER_K8S_VERSION}" \
-        --input-dir "${KBS_INPUT_DIR}" \
+        --input-dir "${KUBEBENCH_RESULTS_DIR}" \
         --output-dir "${KBS_OUTPUT_DIR}" \
         --output-filename "${KBS_OUTPUT_FILENAME}" 2> "${ERROR_LOG_FILE}"
   then

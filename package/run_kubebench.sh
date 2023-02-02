@@ -16,7 +16,6 @@ handle_error() {
   if [[ "${DEBUG}" == "true" ]]; then
       sleep "${DEBUG_TIME_IN_SEC}"
   fi
-  echo -n "${ERROR_LOG_FILE}" > "${RESULTS_DIR}/done"
 }
 
 trap 'handle_error' ERR
@@ -194,6 +193,3 @@ tar -czf "${TAR_FILE_NAME}.tar.gz" *
 if [[ "${DEBUG}" == "true" ]]; then
     sleep "${DEBUG_TIME_IN_SEC}"
 fi
-
-# Inform sonobuoy worker about completion of the job
-echo -n "${RESULTS_DIR}/${TAR_FILE_NAME}.tar.gz" > "${RESULTS_DIR}/done"

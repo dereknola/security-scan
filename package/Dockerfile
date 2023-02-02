@@ -30,7 +30,7 @@ COPY --from=intermediate /kube-bench/cfg /etc/kube-bench/cfg/
 
 COPY package/cfg/ /etc/kube-bench/cfg/
 COPY package/run.sh \
-    package/run_sonobuoy_plugin.sh \
+    package/run_kubebench.sh \
     bin/kb-summarizer \
     package/helper_scripts/check_files_permissions.sh \
     package/helper_scripts/check_files_owner_in_dir.sh \
