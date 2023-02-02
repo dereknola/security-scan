@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-scan
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: security-scan-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: security-scan-bind
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: security-scan-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: security-scan
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: scanner
+  namespace: security-scan
+spec:
+  hostPID: true
+  containers:
+    - name: scanner
+      image: dereknola/security-scan:hack
+      imagePullPolicy: Always
+      env:
+      - name: OVERRIDE_BENCHMARK_VERSION
+        value: "k3s-cis-1.23-permissive"
+      - name: OUTPUT_NS
+        value: security-scan
+      volumeMounts:
+      - name: log-mount
+        mountPath: /var/log
+  volumes:
+    - name: log-mount
+      hostPath:
+        path: /var/log

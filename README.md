@@ -31,6 +31,13 @@ image:
         tag: dev
 ```
 
+## Run Without Rancher
+Use the [scanner.yaml](./scanner.yaml) file to run security-scan directly on a cluster without needing Rancher.  
+Replace the `OVERRIDE_BENCHMARK_VERSION` env with the benchmark you want to run.
+To retrieve the results:
+```
+kubectl get configmap -n security-scan -o yaml
+```
 
 ## License
 Copyright (c) 2019 [Rancher Labs, Inc.](http://rancher.com)

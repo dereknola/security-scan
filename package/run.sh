@@ -6,7 +6,7 @@ set -eE
 defaultCMName=cis-$(date +"%Y-%m-%d-%H-%M-%S-%N")
 OUTPUT_CONFIGMAPNAME=${OUTPUT_CONFIGMAPNAME:-${defaultCMName}}
 
-SONOBUOY_NS=${SONOBUOY_NS:-sonobuoy}
+OUTPUT_NS=${OUTPUT_NS:-sonobuoy}
 SONOBUOY_POD_NAME=${SONOBUOY_POD_NAME:-sonobuoy}
 
 DONE_ANNOTATION_KEY="field.cattle.io/sonobuoyDone"
@@ -29,14 +29,14 @@ handle_error() {
   fi
   # Annotate self (pod) to signal "error"
   if [[ -s "${ERROR_LOG_FILE}" ]]; then
-      if ! kubectl -n "${SONOBUOY_NS}" \
+      if ! kubectl -n "${OUTPUT_NS}" \
         annotate pod "${SONOBUOY_POD_NAME}" \
         ${DONE_ANNOTATION_KEY}="$(cat ${ERROR_LOG_FILE})"
       then
         echo "error annotating self pod"
       fi
   else
-      if ! kubectl -n "${SONOBUOY_NS}" \
+      if ! kubectl -n "${OUTPUT_NS}" \
         annotate pod "${SONOBUOY_POD_NAME}" \
         ${DONE_ANNOTATION_KEY}=${ERROR_ANNOTATION_VALUE}
       then
@@ -152,7 +152,7 @@ else
 fi
 
 # Create a config map with results
-if ! kubectl -n "${SONOBUOY_NS}" \
+if ! kubectl -n "${OUTPUT_NS}" \
   create cm  "${OUTPUT_CONFIGMAPNAME}" \
   --from-file "${KBS_OUTPUT_DIR}"/${KBS_OUTPUT_FILENAME} 2> ${ERROR_LOG_FILE}
 then
@@ -165,14 +165,17 @@ if [[ "${DEBUG}" == "true" ]]; then
 fi
 
 # Annotate self (pod) to signal "done"
-if ! kubectl -n "${SONOBUOY_NS}" \
-  annotate pod "${SONOBUOY_POD_NAME}" \
-  ${DONE_ANNOTATION_KEY}=${DONE_ANNOTATION_VALUE} 2> ${ERROR_LOG_FILE}
-then
-  echo "error annotating self pod" | tee -a ${ERROR_LOG_FILE}
-  exit 1
+if [[ "${OUTPUT_NS}" == "sonobuoy" ]]; then 
+  if ! kubectl -n "${OUTPUT_NS}" \
+    annotate pod "${SONOBUOY_POD_NAME}" \
+    ${DONE_ANNOTATION_KEY}=${DONE_ANNOTATION_VALUE} 2> ${ERROR_LOG_FILE}
+  then
+    echo "error annotating self pod" | tee -a ${ERROR_LOG_FILE}
+    exit 1
+  fi
+  # Wait
+  # The controller will remove this chart once the done annotation is detected
+  sleep infinity
+else 
+  exit 0
 fi
-
-# Wait
-# The controller will remove this chart once the done annotation is detected
-sleep infinity
