@@ -392,6 +392,10 @@ target_mapping:
     - "controlplane"
     - "etcd"
     - "policies"
+  "rke2-stig-1.31":
+    - "node"
+    - "etcd"
+    - "master"
 
   # K3S
   # k3s: Generic

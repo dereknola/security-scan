@@ -1,0 +1,7 @@
+---
+controls:
+version: "rke2-profile"
+id: 10
+text: ""
+type: "etcd"
+groups: []
