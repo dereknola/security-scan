@@ -46,12 +46,15 @@ groups:
           SRG-APP-000635-CTR-001405, SRG-APP-000645-CTR-001410"
         audit: "/bin/ps -fC $apiserverbin"
         tests:
+          bin_op: or
           test_items:
             - flag: --tls-min-version
               compare:
                 op: valid_elements
                 value: VersionTLS12
               set: true
+            - flag: --tls-min-version
+              set: false
         remediation: "Configure the use of strong TLS settings.\n\nEdit the RKE2 Server
           configuration file on all RKE2 Server hosts, located at /etc/rancher/rke2/config.yaml,
           to contain the following:\n\nkube-controller-manager-arg: \n- \"tls-min-version=VersionTLS12\"\
@@ -82,12 +85,15 @@ groups:
           SRG-APP-000635-CTR-001405, SRG-APP-000645-CTR-001410"
         audit: "/bin/ps -fC $controllermanagerbin"
         tests:
+          bin_op: or
           test_items:
             - flag: --tls-min-version
               compare:
                 op: valid_elements
                 value: VersionTLS12
               set: true
+            - flag: --tls-min-version
+              set: false
         remediation: "Configure the use of strong TLS settings.\n\nEdit the RKE2 Server
           configuration file on all RKE2 Server hosts, located at /etc/rancher/rke2/config.yaml,
           to contain the following:\n\nkube-controller-manager-arg: \n- \"tls-min-version=VersionTLS12\"\
@@ -118,12 +124,15 @@ groups:
           SRG-APP-000635-CTR-001405, SRG-APP-000645-CTR-001410"
         audit: "/bin/ps -fC $schedulerbin"
         tests:
+          bin_op: or
           test_items:
             - flag: --tls-min-version
               compare:
                 op: valid_elements
                 value: VersionTLS12
               set: true
+            - flag: --tls-min-version
+              set: false
         remediation: "Configure the use of strong TLS settings.\n\nEdit the RKE2 Server
           configuration file on all RKE2 Server hosts, located at /etc/rancher/rke2/config.yaml,
           to contain the following:\n\nkube-controller-manager-arg: \n- \"tls-min-version=VersionTLS12\"\
