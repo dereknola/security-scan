@@ -438,9 +438,11 @@ groups:
           health checks) and Role-Based Access Controls (RBAC) are in place to limit the
           anonymous access, this access must be disabled and only enabled when necessary."
         audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/sh -c 'if test -e $kubeletconf; then /bin/cat $kubeletconf; fi' "
         tests:
           test_items:
             - flag: --anonymous-auth
+              path: '{.authentication.anonymous.enabled}'
               compare:
                 op: eq
                 value: false
@@ -557,9 +559,11 @@ groups:
           the Kubernetes cluster. To change this behavior, the default setting of AlwaysAllow
           for the authorization mode must be set to \"Webhook\"."
         audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/sh -c 'if test -e $kubeletconf; then /bin/cat $kubeletconf; fi' "
         tests:
           test_items:
             - flag: --authorization-mode
+              path: '{.authorization.mode}'
               compare:
                 op: eq
                 value: "Webhook"
@@ -783,9 +787,11 @@ groups:
           the application terminates all sessions or network access; it only ends the
           inactive session and releases the resources associated with that session."
         audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/sh -c 'if test -e $kubeletconf; then /bin/cat $kubeletconf; fi' "
         tests:
           test_items:
             - flag: --streaming-connection-idle-timeout
+              path: '{.streamingConnectionIdleTimeout}'
               compare:
                 op: eq
                 value: "5m"
@@ -842,9 +848,11 @@ groups:
           It is vital to implement protections through Kubernetes components to reduce
           the attack surface."
         audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/sh -c 'if test -e $kubeletconf; then /bin/cat $kubeletconf; fi' "
         tests:
           test_items:
             - flag: --protect-kernel-defaults
+              path: '{.protectKernelDefaults}'
               compare:
                 op: eq
                 value: true
@@ -1011,7 +1019,7 @@ groups:
             - flag: --authorization-mode
               compare:
                 op: eq
-                value: "RBAC,Node"
+                value: "Node,RBAC"
               set: true
         remediation: "Edit the RKE2 Server configuration file on all RKE2 Control Plane
           hosts, located at /etc/rancher/rke2/config.yaml, to contain the following:\n\
