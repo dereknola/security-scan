@@ -5,7 +5,6 @@ master:
     - scheduler
     - controllermanager
     - etcd
-    - flanneld
     - kubernetes
     - kubelet
     - psa
@@ -17,17 +16,10 @@ master:
 
   apiserver:
     bins:
-      - "kube-apiserver"
-      - "hyperkube apiserver"
-      - "hyperkube kube-apiserver"
-      - "apiserver"
-      - "containerd"
+      - kube-apiserver
     confs:
-      - /etc/kubernetes/manifests/kube-apiserver.yaml
-      - /etc/kubernetes/manifests/kube-apiserver.manifest
-      - /var/snap/kube-apiserver/current/args
       - /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
-    defaultconf: /etc/kubernetes/manifests/kube-apiserver.yaml
+    defaultconf: /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
 
   psa:
     bins: []
@@ -37,55 +29,36 @@ master:
 
   scheduler:
     bins:
-      - "kube-scheduler"
-      - "hyperkube scheduler"
-      - "hyperkube kube-scheduler"
-      - "scheduler"
-      - "containerd"
+      - kube-scheduler
     confs:
-      - /etc/kubernetes/manifests/kube-scheduler.yaml
-      - /etc/kubernetes/manifests/kube-scheduler.manifest
-      - /var/snap/kube-scheduler/current/args
       - /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
-    defaultconf: /etc/kubernetes/manifests/kube-scheduler.yaml
-
+    kubeconfig:
+      - /var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+    defaultconf: /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+  
   controllermanager:
     bins:
-      - "kube-controller-manager"
-      - "kube-controller"
-      - "hyperkube controller-manager"
-      - "hyperkube kube-controller-manager"
-      - "controller-manager"
-      - "containerd"
+      - kube-controller-manager
     confs:
-      - /etc/kubernetes/manifests/kube-controller-manager.yaml
-      - /etc/kubernetes/manifests/kube-controller-manager.manifest
-      - /var/snap/kube-controller-manager/current/args
       - /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
-    defaultconf: /etc/kubernetes/manifests/kube-controller-manager.yaml
-
+    kubeconfig:
+      - /var/lib/rancher/rke2/server/cred/controller.kubeconfig
+    defaultconf: /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+  
   etcd:
-    optional: true
     bins:
-      - "etcd"
-    confs:
-      - /etc/kubernetes/manifests/etcd.yaml
-      - /etc/kubernetes/manifests/etcd.manifest
-      - /etc/etcd/etcd.conf
-      - /var/snap/etcd/common/etcd.conf.yml
-      - /var/lib/rancher/rke2/server/db/etcd/config
-    defaultconf: /etc/kubernetes/manifests/etcd.yaml
-
-  flanneld:
-    optional: true
-    bins:
-      - flanneld
-    defaultconf: /etc/sysconfig/flanneld
+      - etcd
+    datadirs:
+      - /var/lib/rancher/rke2/server/db/etcd
+    defaultconf: /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
 
   kubelet:
     bins:
       - "kubelet"
-      - "hyperkube kubelet"
+    confs:
+      - "/var/lib/rancher/rke2/agent/etc/kubelet.conf.d/00-rke2-defaults.conf"
+    defaultconf: "/var/lib/rancher/rke2/agent/etc/kubelet.conf.d/00-rke2-defaults.conf"
+
 
 node:
   components:
@@ -99,52 +72,15 @@ node:
 
   kubelet:
     cafile:
-      - "/etc/kubernetes/pki/ca.crt"
-      - "/etc/kubernetes/certs/ca.crt"
-      - "/etc/kubernetes/cert/ca.pem"
-      - "/etc/kubernetes/ssl/kube-ca.pem"
       - "/var/lib/rancher/rke2/agent/server.crt"
       - "/var/lib/rancher/rke2/agent/client-ca.crt"
-      - "/var/lib/rancher/k3s/agent/client-ca.crt"
-    svc:
-      # These paths must also be included
-      #  in the 'confs' property below
-      - "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
-      - "/etc/systemd/system/kubelet.service"
-      - "/lib/systemd/system/kubelet.service"
-      - "/etc/systemd/system/snap.kubelet.daemon.service"
     bins:
       - "kubelet"
-      - "hyperkube kubelet"
-      - "containerd"
     kubeconfig:
-      - "/etc/kubernetes/kubelet.conf"
-      - "/var/lib/kubelet/kubeconfig"
-      - "/etc/kubernetes/kubelet-kubeconfig"
-      - "/etc/kubernetes/ssl/kubecfg-kube-node.yaml"
       - "/var/lib/rancher/rke2/agent/kubelet.kubeconfig"
-      - "/var/lib/rancher/k3s/server/cred/admin.kubeconfig"
-      - "/var/lib/rancher/k3s/agent/kubelet.kubeconfig"
     confs:
-      - "/var/lib/kubelet/config.yaml"
-      - "/etc/kubernetes/kubelet/kubelet-config.json"
-      - "/home/kubernetes/kubelet-config.yaml"
-      - "/etc/default/kubelet"
-      - "/var/lib/kubelet/kubeconfig"
-      - "/var/snap/kubelet/current/args"
-      ## Due to the fact that the kubelet might be configured
-      ## without a kubelet-config file, we use a work-around
-      ## of pointing to the systemd service file (which can also
-      ## hold kubelet configuration).
-      ## Note: The following paths must match the one under 'svc'
-      - "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
-      - "/etc/systemd/system/kubelet.service"
-      - "/lib/systemd/system/kubelet.service"
-      - "/etc/systemd/system/snap.kubelet.daemon.service"
-      - "/etc/rancher/rke2/rke2.yaml"
-      - /var/lib/rancher/rke2/agent/kubelet.kubeconfig
-    defaultconf: "/var/lib/kubelet/config.yaml"
-    defaultsvc: "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
+      - "/var/lib/rancher/rke2/agent/etc/kubelet.conf.d/00-rke2-defaults.conf"
+    defaultconf: "/var/lib/rancher/rke2/agent/etc/kubelet.conf.d/00-rke2-defaults.conf"
     defaultkubeconfig: "/etc/kubernetes/kubelet.conf"
     defaultcafile: "/etc/kubernetes/pki/ca.crt"
 
@@ -152,8 +88,6 @@ node:
     optional: true
     bins:
       - "kube-proxy"
-      - "hyperkube proxy"
-      - "hyperkube kube-proxy"
       - "proxy"
       - "containerd"
     confs:
@@ -164,7 +98,6 @@ node:
       - /etc/kubernetes/kubelet-kubeconfig
       - /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml
       - /var/lib/rancher/rke2/agent/kubeproxy.kubeconfig
-      - /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig
     svc:
       - "/lib/systemd/system/kube-proxy.service"
     defaultconf: /etc/kubernetes/addons/kube-proxy-daemonset.yaml
@@ -179,12 +112,7 @@ etcd:
       - "etcd"
       - "containerd"
     confs:
-      - /etc/kubernetes/manifests/etcd.yaml
-      - /etc/kubernetes/manifests/etcd.manifest
-      - /etc/etcd/etcd.conf
-      - /var/snap/etcd/common/etcd.conf.yml
       - /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
-      - /var/lib/rancher/k3s/server/db/etcd/config
     defaultconf: /etc/kubernetes/manifests/etcd.yaml
 
 version_mapping:
